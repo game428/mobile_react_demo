@@ -1,0 +1,19 @@
+.chat_wrapper {
+  height: 100%;
+}
+
+.chat_list {
+  height: calc(100% - 44px);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.goods_card {
+  margin: 0;
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+}
+
+.delete_button {
+  height: 100%;
+}

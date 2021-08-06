@@ -1,0 +1,96 @@
+.footer_more {
+  height: 200px;
+  transition: height 0.2s;
+  color: #eee;
+  overflow: auto;
+}
+
+.more_cont {
+  flex: 1;
+  padding: 20px 10px;
+}
+
+.footer_more.is_head_more {
+  height: 0px;
+}
+
+.more_wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+}
+
+.more_icon {
+  font-size: 40px;
+  color: #2880e6;
+}
+
+.emoji_wrapper {
+  position: relative;
+}
+
+.clear_btn {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  padding: 5px 15px;
+  background-color: #fff;
+  color: #000;
+  font-size: 25px;
+  font-weight: bold;
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+}
+
+.footer_more.is_head_more .clear_btn {
+  position: absolute;
+}
+
+.footer_input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 50px;
+  background-color: #fff;
+  padding: 0 15px;
+}
+
+.footer_wrapper .am-list-item {
+  flex: 1;
+  border: 1px solid #666;
+  border-radius: 4px;
+}
+
+.footer_wrapper .emoji_btn {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.footer_wrapper .am-button {
+  width: 60px;
+}
+
+.footer_wrapper .am-grid .am-flexbox {
+  background-color: transparent;
+}
+
+.grid_item {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg_w {
+  background-color: #fff;
+}
+
+.more_item {
+  font-size: 50px;
+  color: #108ee9;
+}
+
+.emoji_item {
+  width: 20px;
+  height: 20px;
+}

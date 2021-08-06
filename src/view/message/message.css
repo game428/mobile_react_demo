@@ -1,0 +1,17 @@
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  background-color: #eee;
+}
+
+.message_list {
+  width: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+  padding: 0 10px;
+  height: calc(100% - 50px);
+}

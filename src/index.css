@@ -5,9 +5,65 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100%;
 }
+
+html {
+  height: 100%;
+}
+
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+@font-face {
+  font-family: "iconfont";
+  /* Project id 2720762 */
+  src: url('//at.alicdn.com/t/font_2720762_d5j218r34z.woff2?t=1628152615253') format('woff2'),
+    url('//at.alicdn.com/t/font_2720762_d5j218r34z.woff?t=1628152615253') format('woff'),
+    url('//at.alicdn.com/t/font_2720762_d5j218r34z.ttf?t=1628152615253') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 20px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #888888;
+}
+
+.lg_icon {
+  font-size: 30px;
+}
+
+.icon-jjia-:before {
+  content: "\e6a9";
+}
+
+.icon-biaoqing:before {
+  content: "\e644";
+}
+
+.icon-tupian:before {
+  content: "\e607";
+}
+
+.icon-user:before {
+  content: "\e67b";
+}
+
+.icon-xiaoxi:before {
+  content: "\e603";
+}
+
+.active_icon {
+  color: #108ee9;
 }
