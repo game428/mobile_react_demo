@@ -1,13 +1,16 @@
 import { Icon, ActivityIndicator } from "zarm";
+import emojiMap from "@/assets/emoji/emojiMap.json";
+import "./msgItem.css";
 
 const MsgItem = (props) => {
   let message = props.message;
   let isSelf = props.isSelf;
   let $IM = window.$IM;
-  const emojiMap = require("@/assets/emoji/emojiMap.json");
-  function handleMsg(text) {
+
+  // 处理表情
+  const handleMsg = (text) => {
     let temp = text;
-    let html = "";
+    let html = [];
     let left = -1;
     let right = -1;
     while (temp.length > 0) {
@@ -16,43 +19,67 @@ const MsgItem = (props) => {
       if (right > left && left > -1) {
         let img = temp.slice(left, right + 1);
         if (emojiMap[img]) {
-          html += temp.slice(0, left);
-          html += `<img className="emoji_icon" src="${require("@/assets/emoji/" +
-            emojiMap[img])}">`;
+          html.push(temp.slice(0, left));
+          html.push(
+            <img
+              className="emoji_icon"
+              key={message.onlyId + "-" + temp.length}
+              src={require("@/assets/emoji/" + emojiMap[img]).default}
+              alt={emojiMap[img]}
+            />
+          );
         } else {
-          html += temp.slice(0, right + 1);
+          html.push(temp.slice(0, right + 1));
         }
         temp = temp.slice(right + 1);
       } else {
         let n = right < left ? left : right;
         if (n === -1) {
-          html += temp;
+          html.push(temp);
           temp = "";
         } else {
-          html += temp.slice(0, n + 1);
+          html.push(temp.slice(0, n + 1));
           temp = temp.slice(n + 1);
         }
       }
     }
     return html;
-  }
-  function msgStatusDom() {
+  };
+
+  // 消息状态
+  const msgStatusDom = () => {
     switch (message.sendStatus) {
       case $IM.TYPES.SEND_STATE.BFIM_MSG_STATUS_SENDING:
         return <ActivityIndicator type="spinner" />;
       case $IM.TYPES.SEND_STATE.BFIM_MSG_STATUS_SEND_SUCC:
-        return (
-          <span className="revoke_btn" onClick="$emit('revoke', message)">
+        return isSelf ? (
+          <span
+            className="revoke_btn"
+            onClick={() => {
+              props.revoke(message);
+            }}
+          >
             撤回
           </span>
-        );
+        ) : null;
       case $IM.TYPES.SEND_STATE.BFIM_MSG_STATUS_SEND_FAIL:
-        return <Icon type="info-round-fill" theme="warning" size="lg" />;
+        return (
+          <div onClick={props.resend()}>
+            <Icon
+              type="info-round-fill"
+              theme="warning"
+              color="f35f5f"
+              size="lg"
+            />
+          </div>
+        );
       default:
         break;
     }
-  }
-  function msgTypeDom() {
+  };
+
+  // 消息类型
+  const msgTypeDom = () => {
     switch (message.type) {
       case 0:
         return <span className="text_box">{handleMsg(message.text)}</span>;
@@ -67,29 +94,23 @@ const MsgItem = (props) => {
       default:
         return <span>{message.body}</span>;
     }
-  }
+  };
   return (
-    <div className="message_wrapper">
+    <div className="message_item_wrapper">
       {message.type === 31 ? (
         <div className="group_tip_wrapper">
           {isSelf ? "你" : "对方"}撤回了一条消息
         </div>
       ) : (
-        <div
-          className="c2c_layout"
-          className={isSelf ? "position_right" : null}
-        >
+        <div className={"c2c_layout" + (isSelf ? " position_right" : "")}>
           <div className="col_1">
             <div className="avatar">
               <img
-                v-if="isSelf"
-                src="@/assets/img/curUser.jpg"
-                className="avatar_img"
-                alt=""
-              />
-              <img
-                v-else
-                src="@/assets/img/avatar.png"
+                src={
+                  require(isSelf
+                    ? "@/assets/img/curUser.jpg"
+                    : "@/assets/img/avatar.png").default
+                }
                 className="avatar_img"
                 alt=""
               />
@@ -99,13 +120,15 @@ const MsgItem = (props) => {
             <div className="content_wrapper">
               <div className="message_status">{msgStatusDom()}</div>
               <div
-                className="message_content"
-                className={isSelf ? "message_send" : "message_received"}
+                className={
+                  "message_content " +
+                  (isSelf ? "message_send" : "message_received")
+                }
               >
                 {msgTypeDom()}
               </div>
             </div>
-            <div className="base" className={isSelf ? "right" : "left"}>
+            <div className={"base " + (isSelf ? "right" : "left")}>
               <div className="date">
                 {new Date(message.showMsgTime).toLocaleString()}
               </div>

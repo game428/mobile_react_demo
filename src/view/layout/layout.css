@@ -1,8 +1,0 @@
-.layout_wrapper {
-  height: 100%;
-}
-
-.main_wrapper {
-  height: calc(100% - 50px);
-  background-color: #eee;
-}

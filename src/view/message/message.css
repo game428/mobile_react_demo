@@ -2,16 +2,31 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  height: 100%;
   overflow: hidden;
   position: relative;
+  height: 100%;
   background-color: #eee;
 }
 
-.message_list {
-  width: 100%;
-  box-sizing: border-box;
-  overflow: auto;
-  padding: 0 10px;
+.message_list_wrapper {
   height: calc(100% - 50px);
+}
+
+.message_list_wrapper.more {
+  height: calc(100% - 250px);
+}
+
+.message_list {
+  overflow: auto;
+  height: 100%;
+}
+
+.message_list .am-list-body {
+  background-color: transparent;
+}
+
+.message_list .am-list-body::before,
+.message_list .am-list-body::after {
+  background-color: transparent;
+  height: 0;
 }

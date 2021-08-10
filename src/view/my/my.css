@@ -1,0 +1,7 @@
+.my_wrapper {
+  height: 100%;
+}
+
+.my_main {
+  height: calc(100% - 50px);
+}

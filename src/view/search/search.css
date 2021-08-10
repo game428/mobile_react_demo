@@ -1,0 +1,7 @@
+.search_wrapper {
+  height: 100%;
+}
+
+.search_main {
+  height: calc(100% - 50px);
+}

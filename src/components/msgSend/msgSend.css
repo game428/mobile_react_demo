@@ -14,12 +14,6 @@
   height: 0px;
 }
 
-.more_wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: start;
-}
-
 .more_icon {
   font-size: 40px;
   color: #2880e6;
@@ -55,10 +49,12 @@
   padding: 0 15px;
 }
 
-.footer_wrapper .am-list-item {
+.footer_wrapper .msg_input {
   flex: 1;
   border: 1px solid #666;
   border-radius: 4px;
+  padding: 10px;
+  font-size: 16px;
 }
 
 .footer_wrapper .emoji_btn {
@@ -79,6 +75,18 @@
   height: 100%;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+
+.file_input {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  bottom: 0;
+  height: 100%;
+  width: 100%;
+  opacity: 0;
 }
 
 .bg_w {
@@ -91,6 +99,6 @@
 }
 
 .emoji_item {
-  width: 20px;
-  height: 20px;
+  width: 80%;
+  height: 80%;
 }

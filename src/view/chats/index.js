@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect, useCallback } from "react";
+import { useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { context } from "@/reducer";
 import { useHistory } from "react-router-dom";
 import {
@@ -11,6 +11,7 @@ import {
   Button,
 } from "antd-mobile";
 import "./chat.css";
+import HomeFooter from "@/components/homeFooter";
 import ChatItem from "@/components/chatItem";
 
 const ChatPage = () => {
@@ -18,12 +19,14 @@ const ChatPage = () => {
   let [state, dispatch] = useContext(context);
   let history = useHistory();
 
-  const ds = new ListView.DataSource({
-    rowHasChanged: (row1, row2) => row1 !== row2,
-  });
+  const ds = useMemo(() => {
+    return new ListView.DataSource({
+      rowHasChanged: (row1, row2) => row1 !== row2,
+    });
+  }, []);
 
   const [dataSource, setDataSource] = useState(ds);
-  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   const renderItem = (rowData, sectionID, rowID) => {
     return (
@@ -47,47 +50,37 @@ const ChatPage = () => {
     );
   };
 
-  const initChat = (conversationID) => {
-    setDataSource(
-      dataSource.cloneWithRows([
-        {
-          conversationID: 11,
-          showMsg: "41414",
-        },
-      ])
-    );
-    setLoading(false);
-    // $msim
-    //   .getConversationList({
-    //     conversationID: conversationID,
-    //   })
-    //   .then((res) => {
-    //     let chats = res.data.chats;
-    //     if (chats.length > 0) {
-    //       dispatch({ type: "addChats", payload: chats });
-    //       setDataSource(dataSource.cloneWithRows([...chats]));
-    //     setLoading(false);
-    //     }
-    //     setLoading(false);
-    //   })
-    //   .catch((err) => {
-    //     setLoading(false);
-    //     return Toast.show(err?.msg || err);
-    //   });
-  };
+  const initChat = useCallback(
+    (conversationID) => {
+      $msim
+        .getConversationList({
+          conversationID: conversationID,
+        })
+        .then((res) => {
+          let chats = res.data.chats;
+          setHasMore(res.data.hasMore);
+          if (chats.length > 0) {
+            dispatch({ type: "addChats", payload: chats });
+          }
+        })
+        .catch((err) => {
+          return Toast.show(err?.msg || err);
+        });
+    },
+    [$msim, dispatch]
+  );
 
   // 模拟加载更多数据
-  const loadData = () => {
-    setLoading(true);
+  const loadData = useCallback(() => {
     let conversationID;
-    let chatList = state?.chatList || [];
+    let chatList = state.chatList;
     if (chatList.length > 0) {
       conversationID = chatList[chatList.length - 1].conversationID;
     }
     initChat(conversationID);
-  };
+  }, [initChat, state.chatList]);
 
-  function deleteChat(chat) {
+  const deleteChat = (chat) => {
     $msim
       .deleteConversation({
         conversationID: chat.conversationID,
@@ -98,9 +91,9 @@ const ChatPage = () => {
       .catch((err) => {
         return Toast.show(err?.msg || err);
       });
-  }
+  };
 
-  function chatChange(chat) {
+  const chatChange = (chat) => {
     if (chat && chat.conversationID) {
       // TODO怎么判断已读
       if (chat.unread > 0) {
@@ -109,17 +102,22 @@ const ChatPage = () => {
       dispatch({ type: "changeChat", payload: chat });
       history.push("/message/" + chat.conversationID);
     }
-  }
+  };
 
-  function setRead(conversationID) {
+  const setRead = (conversationID) => {
     $msim.setMessageRead({
       conversationID: conversationID,
     });
-  }
+  };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (state.chatList.length === 0) {
+      loadData();
+    } else {
+      setDataSource(ds.cloneWithRows([...state.chatList]));
+    }
+    console.log(341, state.chatList);
+  }, [state.chatList, ds, loadData]);
 
   return (
     <div className="chat_wrapper">
@@ -127,12 +125,29 @@ const ChatPage = () => {
       <ListView
         className="chat_list"
         dataSource={dataSource}
-        renderFooter={() => {
-          return loading ? <Icon type="loading" /> : null;
-        }}
         renderRow={renderItem}
-        onEndReached={loadData}
+        renderFooter={() => {
+          return hasMore ? null : <div className="no_more">没有更多数据了</div>;
+        }}
+        pullToRefresh={
+          hasMore ? (
+            <PullToRefresh
+              direction="up"
+              indicator={{
+                activate: <Icon type="loading" />,
+                deactivate: <div></div>,
+                release: <Icon type="loading" />,
+                finish: <div></div>,
+              }}
+              distanceToRefresh={100}
+              onRefresh={(e) => {
+                loadData();
+              }}
+            />
+          ) : null
+        }
       />
+      <HomeFooter selectedTab="chat"></HomeFooter>
     </div>
   );
 };

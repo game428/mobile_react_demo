@@ -1,15 +1,92 @@
 import "./App.css";
 import { HashRouter as Router } from "react-router-dom";
-import { initState, context, reducer } from "./reducer";
-import { useReducer } from "react";
+import { Toast } from "antd-mobile";
+import { initState, context as Context, reducer } from "./reducer";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import Routes from "./route";
-function App() {
-  let store = useReducer(reducer, initState);
+import fetch from "@/utils/fetch";
+
+const App = (props) => {
+  const store = useReducer(reducer, initState);
   let dispatch = store[1];
-  let $msim = window.$msim;
-  let $IM = window.$IM;
-  let wsURL = "wss://im.ekfree.com:18988";
-  function initListener() {
+  const [isInit, setIsInit] = useState(false);
+  const $msim = window.$msim;
+  const $IM = window.$IM;
+  const location = window.location;
+
+  const logoutClear = useCallback(() => {
+    window.localStorage.removeItem("userId");
+    dispatch({ type: "clear" });
+    location.href = "/#/login";
+  }, [dispatch, location]);
+
+  // 网络状态监听
+  const wsChange = (options) => {
+    console.log("连接状态变更", options);
+  };
+  // 登录
+  const login = useCallback(
+    (options) => {
+      console.log("登录成功", options);
+      let userId = window.localStorage.getItem("userId");
+      if (userId) {
+        dispatch({ type: "setUserId", payload: userId });
+        location.href = "/#/chat";
+      }
+    },
+    [dispatch, location]
+  );
+  // 退出
+  const logout = useCallback(
+    (options) => {
+      logoutClear();
+    },
+    [logoutClear]
+  );
+  // 被踢
+  const kickedOut = useCallback(
+    (options) => {
+      logoutClear();
+    },
+    [logoutClear]
+  );
+  // token失效
+  const tokenNotFound = useCallback(
+    (options) => {
+      logoutClear();
+    },
+    [logoutClear]
+  );
+  // 同步会话状态
+  const syncChats = (options) => {
+    console.log("同步会话", options);
+  };
+  // 接收消息
+  const received = useCallback(
+    (options) => {
+      console.log("接收到消息", options);
+      dispatch({ type: "updateMsgs", payload: options.data });
+    },
+    [dispatch]
+  );
+  // 撤回消息
+  const revoked = useCallback(
+    (options) => {
+      console.log("接收到撤回消息", options);
+      dispatch({ type: "revokeMsgs", payload: options.data });
+    },
+    [dispatch]
+  );
+  // 更新会话
+  const updateChats = useCallback(
+    (options) => {
+      console.log("会话列表更新", options.data);
+      dispatch({ type: "updateChats", payload: options.data });
+    },
+    [dispatch]
+  );
+
+  const initListener = useCallback(() => {
     $msim.on($IM.EVENT.CONNECT_CHANGE, wsChange);
     $msim.on($IM.EVENT.LOGIN, login);
     $msim.on($IM.EVENT.LOGOUT, logout);
@@ -19,98 +96,62 @@ function App() {
     $msim.on($IM.EVENT.MESSAGE_RECEIVED, received);
     $msim.on($IM.EVENT.MESSAGE_REVOKED, revoked);
     $msim.on($IM.EVENT.CONVERSATION_LIST_UPDATED, updateChats);
-    // let userId = window.localStorage.getItem("userId") || null;
-    let userId = null;
+    let userId = window.localStorage.getItem("userId") || null;
     if (userId) {
-      // data.isInit = false;
-      // const loading = $toast.loading({
-      //   message: "登陆中...",
-      //   forbidClick: true,
-      //   duration: 0,
-      //   loadingType: "spinner",
-      // });
-      $msim
-        .login({
-          // wsUrl: res.data.url,
-          // imToken: res.data.token,
-          wsUrl: wsURL,
-          imToken: "testImToken",
-          testId: userId,
+      setIsInit(false);
+      Toast.loading("Loading...", 0);
+      fetch
+        .post("user/iminit", {
+          uid: userId,
+          ctype: 1,
+        })
+        .then((res) => {
+          return $msim.login({
+            wsUrl: res.data.url,
+            imToken: res.data.token,
+          });
         })
         .then((loginRes) => {
-          // loading.close();
-          // store.commit("setUserId", userId);
-          // data.isInit = true;
+          Toast.hide();
+          window.localStorage.setItem("userId", userId);
+          dispatch({ type: "setUserId", payload: userId });
+          setIsInit(true);
+          // window.location.href= "/#/chat"
         })
         .catch((err) => {
+          setIsInit(true);
           if (err?.msg) {
-            // $toast(err.msg);
+            Toast.info(err.msg);
           }
         });
     } else {
-      // data.isInit = true;
+      setIsInit(true);
     }
-  }
+  }, [
+    dispatch,
+    $IM,
+    $msim,
+    kickedOut,
+    received,
+    revoked,
+    updateChats,
+    login,
+    logout,
+    tokenNotFound,
+  ]);
 
-  // 网络状态监听
-  function wsChange(options) {
-    console.log("连接状态变更", options);
-  }
-  // 登录
-  function login(options) {
-    console.log("登录成功", options);
-    let userId = window.localStorage.getItem("userId");
-    if (userId) {
-      // dispatch({ type: "setUserId", payload: userId });
-      console.log(userId, 11);
-      // matchPath("/home", {
-      //   path: "/home",
-      // });
-      // router.push({ name: "home" });
-    }
-  }
-  // 退出
-  function logout(options) {
-    dispatch({ type: "clear" });
-    // router.push({ name: "login" });
-  }
-  // 被踢
-  function kickedOut(options) {
-    dispatch({ type: "clear" });
-    // router.push({ name: "login" });
-  }
-  // token失效
-  function tokenNotFound(options) {
-    dispatch({ type: "clear" });
-    // router.push({ name: "login" });
-  }
-  // 同步会话状态
-  function syncChats(options) {
-    console.log("同步会话", options, store);
-  }
-  // 接收消息
-  function received(options) {
-    console.log("接收到消息", options);
-    dispatch({ type: "updateMsgs", payload: options.data });
-  }
-  // 撤回消息
-  function revoked(options) {
-    console.log("接收到撤回消息", options);
-    dispatch({ type: "revokeMsgs", payload: options.data });
-  }
-  // 更新会话
-  function updateChats(options) {
-    console.log("会话列表更新", options.data);
-    dispatch({ type: "updateChats", payload: options.data });
-  }
-  initListener();
+  useEffect(() => {
+    initListener();
+  }, [initListener]);
   return (
-    <context.Provider value={store}>
-      <Router>
-        <Routes />
-      </Router>
-    </context.Provider>
+    <Context.Provider value={store}>
+      {isInit ? (
+        <Router>
+          <Routes />
+        </Router>
+      ) : null}
+    </Context.Provider>
   );
-}
+};
 
 export default App;

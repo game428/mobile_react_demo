@@ -3,7 +3,7 @@
 }
 
 .chat_list {
-  height: calc(100% - 44px);
+  height: calc(100% - 95px);
   overflow-y: auto;
   flex: 1;
 }
@@ -16,4 +16,9 @@
 
 .delete_button {
   height: 100%;
+}
+
+.no_more {
+  text-align: center;
+  padding: 20px;
 }

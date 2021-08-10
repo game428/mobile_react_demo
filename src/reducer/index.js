@@ -7,39 +7,57 @@ let initState = {
   curChat: null, // 当前会话
 };
 
+// 更新state
+const updateObject = (oldObject, newValues) => {
+  // 用空对象作为第一个参数传递给 Object.assign，以确保是复制数据，而不是去改变原来的数据
+  return Object.assign({}, oldObject, newValues);
+};
+
 // 清理初始化
-function clear(state) {
-  state.curUserId = null;
-  state.chatList = [];
-  state.msgList = [];
-  state.curChat = null;
-}
+const clear = (state) => {
+  return updateObject(state, {
+    curUserId: null, // 当前登录用户ID
+    chatList: [], // 会话列表
+    msgList: [], // 消息列表
+    curChat: null, // 当前会话
+  });
+};
 
 // 设置用户id
-function setUserId(state, userId) {
-  state.curUserId = userId;
-}
+const setUserId = (state, userId) => {
+  return updateObject(state, {
+    curUserId: userId, // 当前登录用户ID
+  });
+};
 
 /**会话 */
 // 清理会话列表
-function clearChats(state) {
-  state.chatList = [];
-}
+const clearChats = (state) => {
+  return updateObject(state, {
+    chatList: [],
+  });
+};
 // 新增会话列表
-function addChats(state, chats) {
-  state.chatList.push(...chats);
-}
+const addChats = (state, chats) => {
+  return updateObject(state, {
+    chatList: [...state.chatList, ...chats],
+  });
+};
 // 新增会话
-function addChat(state, chat) {
-  state.chatList.unshift(chat);
-}
+const addChat = (state, chat) => {
+  return updateObject(state, {
+    chatList: [chat, ...state.chatList],
+  });
+};
 // 切换会话
-function changeChat(state, chat) {
-  state.curChat = chat;
-  state.msgList = [];
-}
+const changeChat = (state, chat) => {
+  return updateObject(state, {
+    curChat: chat,
+    msgList: [],
+  });
+};
 // 更新会话列表
-function updateChats(state, chats) {
+const updateChats = (state, chats) => {
   chats.forEach((newChat) => {
     if (newChat.deleted) {
       // 如果是删除会话
@@ -64,94 +82,102 @@ function updateChats(state, chats) {
   state.chatList.sort((pre, next) => {
     return next.showMsgTime - pre.showMsgTime;
   });
+  let newObje = {
+    chatList: JSON.parse(JSON.stringify(state.chatList)),
+  };
   if (!state.curChat && state.chatList.length) {
-    state.curChat = state.chatList[0];
-    state.msgList = [];
+    newObje.curChat = state.chatList[0];
+    newObje.msgList = [];
   }
-}
+  return updateObject(state, newObje);
+};
 
 /**消息 */
 // 新增消息列表
-function addMsgs(state, msgs) {
-  console.log(141, state, msgs);
-  state.msgList.unshift(...msgs);
-}
-// 新增消息
-function addMsg(state, msg) {
-  state.msgList.push(msg);
-}
-// 更新消息列表
-function updateMsgs(state, msgs) {
-  if (!state.curChat) return;
-  msgs.forEach((newMsg) => {
-    if (newMsg.conversationID === state.curChat.conversationID) {
-      let msg = state.msgList.find(
-        (msgItem) => msgItem.onlyId === newMsg.onlyId
-      );
-      if (msg) {
-        Object.assign(msg, newMsg);
-      } else {
-        state.msgList.push(newMsg);
-      }
-    }
+const addMsgs = (state, msgs) => {
+  return updateObject(state, {
+    msgList: [...msgs, ...state.msgList],
   });
-}
+};
+// 新增消息
+const addMsg = (state, msg) => {
+  return updateObject(state, {
+    msgList: [...state.msgList, msg],
+  });
+};
+// 更新消息列表
+const updateMsgs = (state, msgs) => {
+  if (!state.curChat) {
+    return state;
+  } else {
+    msgs.forEach((newMsg) => {
+      if (newMsg.conversationID === state.curChat.conversationID) {
+        let msg = state.msgList.find(
+          (msgItem) => msgItem.onlyId === newMsg.onlyId
+        );
+        if (msg) {
+          Object.assign(msg, newMsg);
+        } else {
+          state.msgList.push(newMsg);
+        }
+      }
+    });
+    return updateObject(state, {
+      msgList: JSON.parse(JSON.stringify(state.msgList)),
+    });
+  }
+};
 
 // 撤回消息列表
-function revokeMsgs(state, msgs) {
-  if (!state.curChat) return;
-  msgs.forEach((newMsg) => {
-    if (newMsg.conversationID === state.curChat.conversationID) {
-      let msg = state.msgList.find((msgItem) => msgItem.msgId === newMsg.msgId);
-      if (msg) {
-        Object.assign(msg, newMsg);
-        console.log(41, msg);
+const revokeMsgs = (state, msgs) => {
+  if (!state.curChat) {
+    return state;
+  } else {
+    msgs.forEach((newMsg) => {
+      if (newMsg.conversationID === state.curChat.conversationID) {
+        let msg = state.msgList.find(
+          (msgItem) => msgItem.msgId === newMsg.msgId
+        );
+        if (msg) {
+          Object.assign(msg, newMsg);
+        }
       }
-    }
-  });
-}
+    });
+    return updateObject(state, {
+      msgList: JSON.parse(JSON.stringify(state.msgList)),
+    });
+  }
+};
 
 // 数据处理器
 const reducer = (state, action) => {
   const { type, payload } = action;
   switch (type) {
     case "clear":
-      clear(state);
-      break;
+      return clear(state);
     case "setUserId":
-      setUserId(state, payload);
-      break;
+      return setUserId(state, payload);
     case "clearChats":
-      clearChats(state);
-      break;
+      return clearChats(state);
     case "addChats":
-      addChats(state, payload);
-      break;
+      return addChats(state, payload);
     case "addChat":
-      addChat(state, payload);
-      break;
+      return addChat(state, payload);
     case "changeChat":
-      changeChat(state, payload);
-      break;
+      return changeChat(state, payload);
     case "updateChats":
-      updateChats(state, payload);
-      break;
+      return updateChats(state, payload);
     case "addMsgs":
-      addMsgs(state, payload);
-      break;
+      return addMsgs(state, payload);
     case "addMsg":
-      addMsg(state, payload);
-      break;
+      return addMsg(state, payload);
     case "updateMsgs":
-      updateMsgs(state, payload);
-      break;
+      return updateMsgs(state, payload);
     case "revoke":
-      revokeMsgs(state, payload);
-      break;
+      return revokeMsgs(state, payload);
     default:
-      break;
+      return state;
   }
-  return state;
 };
 
 let context = React.createContext();

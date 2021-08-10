@@ -1,9 +1,10 @@
-import React from "react";
+// import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import IM from "./assets/js/MSIM";
+// import IM from "msim_1_test";
+import IM from "@/assets/js/MSIM";
 
 window.$IM = IM;
 window.$msim = IM.create();

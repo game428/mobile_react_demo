@@ -1,7 +1,7 @@
 import "./chatItem.css";
 import avatar from "@/assets/img/avatar.png";
 
-function ChatItem(props) {
+const ChatItem = (props) => {
   let chat = props.chat;
   return (
     <div className="chat_item" onClick={() => props.onClick(chat)}>
@@ -38,6 +38,6 @@ function ChatItem(props) {
       </div>
     </div>
   );
-}
+};
 
 export default ChatItem;
