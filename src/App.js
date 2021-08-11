@@ -31,10 +31,10 @@ const App = (props) => {
       let userId = window.localStorage.getItem("userId");
       if (userId) {
         dispatch({ type: "setUserId", payload: userId });
-        location.href = "/#/chat";
+        // location.href = "/#/chat";
       }
     },
-    [dispatch, location]
+    [dispatch]
   );
   // 退出
   const logout = useCallback(

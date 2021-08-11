@@ -4,7 +4,7 @@ let initState = {
   curUserId: null, // 当前登录用户ID
   chatList: [], // 会话列表
   msgList: [], // 消息列表
-  curChat: null, // 当前会话
+  curConversationID: null, // 当前会话ID
 };
 
 // 更新state
@@ -19,7 +19,7 @@ const clear = (state) => {
     curUserId: null, // 当前登录用户ID
     chatList: [], // 会话列表
     msgList: [], // 消息列表
-    curChat: null, // 当前会话
+    curConversationID: null, // 当前会话id
   });
 };
 
@@ -50,9 +50,9 @@ const addChat = (state, chat) => {
   });
 };
 // 切换会话
-const changeChat = (state, chat) => {
+const changeChat = (state, conversationID) => {
   return updateObject(state, {
-    curChat: chat,
+    curConversationID: conversationID,
     msgList: [],
   });
 };
@@ -62,8 +62,8 @@ const updateChats = (state, chats) => {
     if (newChat.deleted) {
       // 如果是删除会话
       state.chatList = state.chatList.filter((chat) => {
-        if (newChat.conversationID === state.curChat.conversationID) {
-          state.curChat = null;
+        if (newChat.conversationID === state.curConversationID) {
+          state.curConversationID = null;
         }
         return chat.conversationID !== newChat.conversationID;
       });
@@ -85,8 +85,8 @@ const updateChats = (state, chats) => {
   let newObje = {
     chatList: JSON.parse(JSON.stringify(state.chatList)),
   };
-  if (!state.curChat && state.chatList.length) {
-    newObje.curChat = state.chatList[0];
+  if (!state.curConversationID && state.chatList.length) {
+    newObje.curConversationID = state.chatList[0].conversationID;
     newObje.msgList = [];
   }
   return updateObject(state, newObje);
@@ -107,11 +107,12 @@ const addMsg = (state, msg) => {
 };
 // 更新消息列表
 const updateMsgs = (state, msgs) => {
-  if (!state.curChat) {
+  console.log(141, state.curConversationID);
+  if (!state.curConversationID) {
     return state;
   } else {
     msgs.forEach((newMsg) => {
-      if (newMsg.conversationID === state.curChat.conversationID) {
+      if (newMsg.conversationID === state.curConversationID) {
         let msg = state.msgList.find(
           (msgItem) => msgItem.onlyId === newMsg.onlyId
         );
@@ -130,11 +131,11 @@ const updateMsgs = (state, msgs) => {
 
 // 撤回消息列表
 const revokeMsgs = (state, msgs) => {
-  if (!state.curChat) {
+  if (!state.curConversationID) {
     return state;
   } else {
     msgs.forEach((newMsg) => {
-      if (newMsg.conversationID === state.curChat.conversationID) {
+      if (newMsg.conversationID === state.curConversationID) {
         let msg = state.msgList.find(
           (msgItem) => msgItem.msgId === newMsg.msgId
         );

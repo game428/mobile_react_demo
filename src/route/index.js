@@ -10,7 +10,7 @@ const AppRoute = () => {
     <Switch>
       <Route path="/login" component={Login} />
       <Route path="/chat" component={Chats} />
-      <Route path="/message/:conversationID" component={Message} />
+      <Route path="/message/:conversationID/:uid" component={Message} />
       <Route path="/search" component={Search} />
       <Route path="/my" component={My} />
       <Route path="*" component={Login} />

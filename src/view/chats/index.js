@@ -99,8 +99,8 @@ const ChatPage = () => {
       if (chat.unread > 0) {
         setRead(chat.conversationID);
       }
-      dispatch({ type: "changeChat", payload: chat });
-      history.push("/message/" + chat.conversationID);
+      dispatch({ type: "changeChat", payload: chat.conversationID });
+      history.push(`/message/${chat.conversationID}/${chat.uid}`);
     }
   };
 
@@ -116,7 +116,6 @@ const ChatPage = () => {
     } else {
       setDataSource(ds.cloneWithRows([...state.chatList]));
     }
-    console.log(341, state.chatList);
   }, [state.chatList, ds, loadData]);
 
   return (

@@ -52,11 +52,12 @@ const Login = () => {
     }
   };
   useEffect(() => {
-    if (state?.curUserId) {
+    if (state.curUserId) {
       setPhone(state.curUserId);
       setIsLogoin(true);
+      history.push("/chat");
     }
-  }, [state.curUserId, setPhone]);
+  }, [state.curUserId, setPhone, history]);
   return (
     <div className="login_wrapper">
       <img src={Background} alt="" className="logo_bg" />

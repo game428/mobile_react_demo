@@ -13,8 +13,10 @@ import MsgSend from "@/components/msgSend";
 import MsgItem from "@/components/msgItem";
 
 const Message = (router) => {
-  let $msim = window.$msim;
-  let [state, dispatch] = useContext(context);
+  const $msim = window.$msim;
+  const params = router.match.params;
+  let uid = parseInt(params.uid);
+  const [state, dispatch] = useContext(context);
   const ds = useMemo(() => {
     return new ListView.DataSource({
       rowHasChanged: (row1, row2) => row1.msgId !== row2.msgId,
@@ -39,7 +41,6 @@ const Message = (router) => {
     if (!isHideMore) setHideMore(true);
   };
   const renderItem = (rowData, sectionID, rowID) => {
-    let uid = state?.curChat?.uid;
     return (
       <MsgItem
         key={rowData.onlyId}
@@ -57,7 +58,7 @@ const Message = (router) => {
     (msgId) => {
       $msim
         .getMessageList({
-          conversationID: state?.curChat?.conversationID,
+          conversationID: params.conversationID,
           msgEnd: msgId,
         })
         .then((res) => {
@@ -74,16 +75,17 @@ const Message = (router) => {
           return Toast.info(err?.msg || err);
         });
     },
-    [$msim, dispatch, state.curChat]
+    [$msim, dispatch, params]
   );
 
   // 模拟加载更多数据
   const loadData = useCallback(() => {
     let msgId;
-    let msgList = state?.msgList || [];
+    let msgList = state.msgList;
     if (msgList.length > 0) {
       msgId = msgList[0].msgId;
     }
+    console.log(msgId, 14);
     initMessage(msgId);
   }, [initMessage, state.msgList]);
 
@@ -110,12 +112,21 @@ const Message = (router) => {
   };
 
   useEffect(() => {
-    if (state.msgList.length === 0) {
+    if (state.curConversationID === null) {
+      dispatch({ type: "changeChat", payload: params.conversationID });
+    } else if (state.msgList.length === 0) {
       loadData();
     } else {
       setDataSource(ds.cloneWithRows([...state.msgList]));
     }
-  }, [state.msgList, ds, loadData]);
+  }, [
+    state.msgList,
+    ds,
+    loadData,
+    dispatch,
+    state.curConversationID,
+    params.conversationID,
+  ]);
 
   return (
     <div className="content">
@@ -150,6 +161,7 @@ const Message = (router) => {
       </div>
       <MsgSend
         ref={msgSendRef}
+        uid={uid}
         hideAll={hideAll}
         showMore={showMore}
         showEmoji={showEmoji}

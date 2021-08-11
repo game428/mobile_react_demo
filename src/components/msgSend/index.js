@@ -7,9 +7,9 @@ import emojiMap from "@/assets/emoji/emojiMap.json";
 import "./msgSend.css";
 
 const MsgSend = forwardRef((props, ref) => {
-  let $msim = window.$msim;
-  let $IM = window.$IM;
-  let [state, dispatch] = useContext(context);
+  const $msim = window.$msim;
+  const $IM = window.$IM;
+  const [state, dispatch] = useContext(context);
   const [msgText, setMsgText] = useState("");
   const moreData = [
     {
@@ -24,7 +24,6 @@ const MsgSend = forwardRef((props, ref) => {
   });
   // 选择表情
   const selectEmoji = (emoji) => {
-    console.log(141, msgText + emoji.key);
     setMsgText(msgText + emoji.key);
   };
   const clearMsg = (e) => {
@@ -71,7 +70,7 @@ const MsgSend = forwardRef((props, ref) => {
       return Toast.info("不能发空消息");
     }
     let msgObj = $msim.createTextMessage({
-      to: state.curChat.uid,
+      to: props.uid,
       payload: {
         text: msgText,
       },
@@ -130,7 +129,6 @@ const MsgSend = forwardRef((props, ref) => {
   // 选择图片
   const selectImg = (e) => {
     let file = e.target.files[0];
-    console.log(41, e.target, file);
     if (
       file.type === "image/jpg" ||
       file.type === "image/jpeg" ||
@@ -151,7 +149,7 @@ const MsgSend = forwardRef((props, ref) => {
           let width = this.width;
           let height = this.height;
           let msgObj = $msim.createImageMessage({
-            to: state.curChat.uid,
+            to: props.uid,
             payload: {
               height: height,
               width: width,
