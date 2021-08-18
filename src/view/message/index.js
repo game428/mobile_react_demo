@@ -12,8 +12,9 @@ import "./message.css";
 import MsgSend from "@/components/msgSend";
 import MsgItem from "@/components/msgItem";
 
-const Message = (router) => {
+const Message = (router, a, b) => {
   const $msim = window.$msim;
+  const $IM = window.$IM;
   const params = router.match.params;
   let uid = parseInt(params.uid);
   const [state, dispatch] = useContext(context);
@@ -85,7 +86,6 @@ const Message = (router) => {
     if (msgList.length > 0) {
       msgId = msgList[0].msgId;
     }
-    console.log(msgId, 14);
     initMessage(msgId);
   }, [initMessage, state.msgList]);
 
@@ -105,13 +105,44 @@ const Message = (router) => {
   };
 
   const scrollBottom = () => {
+    console.log("滚动");
     setTimeout(() => {
       let scrollHeight = msgRef.current.getInnerViewNode().scrollHeight;
       msgRef.current.scrollTo(0, scrollHeight);
     }, 0);
   };
 
+  // 接收消息
+  const received = useCallback(
+    (options) => {
+      console.log("接收到消息", options, params);
+      let newMsg = options.data[0];
+      if (newMsg.conversationID === params.conversationID) {
+        dispatch({ type: "updateMsgs", payload: options.data });
+        if (newMsg.fromUid === uid || options.data.length > 1) {
+          $msim.setMessageRead({
+            conversationID: newMsg.conversationID,
+          });
+        }
+      }
+    },
+    [dispatch, $msim, params, uid]
+  );
+  // 撤回消息
+  const revoked = useCallback(
+    (options) => {
+      console.log("接收到撤回消息", options);
+      let newMsg = options.data[0];
+      if (newMsg.conversationID === params.conversationID) {
+        dispatch({ type: "revokeMsgs", payload: options.data });
+      }
+    },
+    [dispatch, params]
+  );
+
   useEffect(() => {
+    $msim.on($IM.EVENT.MESSAGE_RECEIVED, received);
+    $msim.on($IM.EVENT.MESSAGE_REVOKED, revoked);
     if (state.curConversationID === null) {
       dispatch({ type: "changeChat", payload: params.conversationID });
     } else if (state.msgList.length === 0) {
@@ -119,9 +150,20 @@ const Message = (router) => {
     } else {
       setDataSource(ds.cloneWithRows([...state.msgList]));
     }
+    return () => {
+      $msim.off($IM.EVENT.MESSAGE_RECEIVED);
+      $msim.off($IM.EVENT.MESSAGE_REVOKED);
+    };
   }, [
+    router,
+    a,
+    b,
     state.msgList,
     ds,
+    $IM,
+    $msim,
+    received,
+    revoked,
     loadData,
     dispatch,
     state.curConversationID,
@@ -133,7 +175,7 @@ const Message = (router) => {
       <NavBar
         mode="light"
         icon={<Icon type="left" />}
-        onLeftClick={() => window.history.back()}
+        onLeftClick={() => router.history.goBack()}
       >
         {router.match.params.conversationID}
       </NavBar>

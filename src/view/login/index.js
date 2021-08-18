@@ -26,6 +26,7 @@ const Login = () => {
       return Toast.info("请输入手机号码");
     }
     if (!state.curUserId) {
+      let wsURL, imToken;
       Toast.loading("Loading...", 0);
       fetch
         .post("user/iminit", {
@@ -33,6 +34,8 @@ const Login = () => {
           ctype: 1,
         })
         .then((res) => {
+          wsURL = res.data.url;
+          imToken = res.data.token;
           return $msim.login({
             wsUrl: res.data.url,
             imToken: res.data.token,
@@ -41,6 +44,8 @@ const Login = () => {
         .then((loginRes) => {
           Toast.hide();
           window.localStorage.setItem("userId", phone.value);
+          window.localStorage.setItem("wsUrL", wsURL);
+          window.localStorage.setItem("imToken", imToken);
           dispatch({ type: "setUserId", payload: phone.value });
           history.push("/chat");
         })

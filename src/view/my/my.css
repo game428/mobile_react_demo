@@ -5,3 +5,11 @@
 .my_main {
   height: calc(100% - 50px);
 }
+
+.my_main .avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 40px auto;
+}

@@ -1,4 +1,10 @@
-import { useState, useImperativeHandle, forwardRef, useContext } from "react";
+import {
+  useState,
+  useImperativeHandle,
+  forwardRef,
+  useContext,
+  useEffect,
+} from "react";
 import { context } from "@/reducer";
 import COS from "@/assets/js/cos-js-sdk-v5.min.js";
 import { Icon, Button, Grid, Toast } from "antd-mobile";
@@ -9,8 +15,11 @@ import "./msgSend.css";
 const MsgSend = forwardRef((props, ref) => {
   const $msim = window.$msim;
   const $IM = window.$IM;
+  const acceptTypes = ["image/jpg", "image/jpeg", "image/gif", "image/png"];
   const [state, dispatch] = useContext(context);
   const [msgText, setMsgText] = useState("");
+  let temCos = null;
+  let temConfig = null;
   const moreData = [
     {
       className: "more_item iconfont icon-tupian",
@@ -76,26 +85,23 @@ const MsgSend = forwardRef((props, ref) => {
       },
     });
     setMsgText("");
-    if (msgObj) {
-      sendMsg(msgObj);
-    }
+    dispatch({ type: "addMsg", payload: msgObj });
+    props.scrollBottom();
+    sendMsg(msgObj);
   };
 
   // 发送消息
   const sendMsg = (msgObj) => {
-    dispatch({ type: "addMsg", payload: msgObj });
-    let oldMsg = state.msgList[state.msgList.length - 1];
-    props.scrollBottom();
     $msim
       .sendMessage(msgObj)
       .then((res) => {
-        oldMsg.sendStatus = res.data.sendStatus;
-        oldMsg.msgId = res.data.msgId;
-        dispatch({ type: "updateMsgs", payload: [msgObj] });
+        msgObj.sendStatus = res.data.sendStatus;
+        msgObj.msgId = res.data.msgId;
+        dispatch({ type: "updateMsg", payload: msgObj });
       })
       .catch((err) => {
-        oldMsg.sendStatus = $IM.TYPES.SEND_STATE.BFIM_MSG_STATUS_SEND_FAIL;
-        dispatch({ type: "updateMsgs", payload: [msgObj] });
+        msgObj.sendStatus = 2;
+        dispatch({ type: "updateMsg", payload: msgObj });
         return Toast.info({
           message: err?.msg || err,
         });
@@ -105,36 +111,102 @@ const MsgSend = forwardRef((props, ref) => {
   // 重发
   const resend = (msgObj) => {
     msgObj.sendStatus = 0;
+    dispatch({ type: "updateMsg", payload: msgObj });
     $msim
       .resendMessage(msgObj)
       .then((res) => {
         msgObj.sendStatus = res.data.sendStatus;
         msgObj.msgId = res.data.msgId;
+        dispatch({ type: "updateMsg", payload: msgObj });
       })
       .catch((err) => {
         msgObj.sendStatus = 2;
+        dispatch({ type: "updateMsg", payload: msgObj });
         return Toast.info({
           message: err?.msg || err,
         });
       });
   };
 
-  let bucket = "msim-1252460681";
-  let region = "ap-chengdu";
-  let cos = new COS({
-    SecretId: "AKIDiARZwekKIK7f18alpjsqdOzmQAplexA5",
-    SecretKey: "f7MLJ3YnoX2KLKBmBeAVeWNVLaYEmGYa",
-  });
+  // 上传图片到云
+  const uploadFile = (msgObj, fileExtension, file) => {
+    let name = new Date().getTime();
+    console.log(444, state);
+    let cos = state.cos || temCos;
+    let config = temConfig || state.cosConfig;
+    cos.putObject(
+      {
+        Bucket: config.bucket /* 必须 */,
+        Region: config.region /* 存储桶所在地域，必须字段 */,
+        Key: `${config.path}/${name}.${fileExtension}` /* 必须 */,
+        Body: file,
+        onProgress: (progressData) => {
+          msgObj.progress = progressData.percent * 100;
+          dispatch({ type: "updateMsg", payload: msgObj });
+        },
+      },
+      (err, data) => {
+        if (data && data.statusCode === 200) {
+          msgObj.url = "https://" + data.Location;
+          if (msgObj) {
+            sendMsg(msgObj);
+          }
+        }
+      }
+    );
+  };
+
+  // 获取cosKey
+  const getCos = (callback) => {
+    $msim.getCosKey().then((res) => {
+      dispatch({
+        type: "setCosConfig",
+        payload: res.data,
+      });
+      temConfig = res.data;
+      callback(res.data);
+    });
+  };
+
+  // 初始化cos
+  const initCos = (config) => {
+    let cosOptions = config;
+    temCos = new COS({
+      getAuthorization: (options, callback) => {
+        if (cosOptions) {
+          callback({
+            TmpSecretId: cosOptions.id,
+            TmpSecretKey: cosOptions.key,
+            SecurityToken: cosOptions.token,
+            // 建议返回服务器时间作为签名的开始时间，避免用户浏览器本地时间偏差过大导致签名错误
+            StartTime: cosOptions.startTime, // 时间戳，单位秒，如：1580000000
+            ExpiredTime: cosOptions.expTime, // 时间戳，单位秒，如：1580000900
+          });
+          cosOptions = null;
+        } else {
+          getCos((data) => {
+            callback({
+              TmpSecretId: data.id,
+              TmpSecretKey: data.key,
+              SecurityToken: data.token,
+              // 建议返回服务器时间作为签名的开始时间，避免用户浏览器本地时间偏差过大导致签名错误
+              StartTime: data.startTime, // 时间戳，单位秒，如：1580000000
+              ExpiredTime: data.expTime, // 时间戳，单位秒，如：1580000900
+            });
+          });
+        }
+      },
+    });
+    dispatch({
+      type: "setCos",
+      payload: temCos,
+    });
+  };
 
   // 选择图片
   const selectImg = (e) => {
     let file = e.target.files[0];
-    if (
-      file.type === "image/jpg" ||
-      file.type === "image/jpeg" ||
-      file.type === "image/gif" ||
-      file.type === "image/png"
-    ) {
+    if (acceptTypes.includes(file.type.toLowerCase())) {
       // im_image
       // im_video
       // im_voice
@@ -153,37 +225,30 @@ const MsgSend = forwardRef((props, ref) => {
             payload: {
               height: height,
               width: width,
-              url: "",
+              url: e.target.result,
               progress: 0,
             },
           });
-          let name = new Date().getTime();
+          dispatch({ type: "addMsg", payload: msgObj });
           props.hideAll();
-          cos.putObject(
-            {
-              Bucket: bucket /* 必须 */,
-              Region: region /* 存储桶所在地域，必须字段 */,
-              Key: `im_image/${name}.${fileExtension}` /* 必须 */,
-              Body: file,
-              onProgress: (progressData) => {
-                msgObj.progress = progressData.percent * 100;
-              },
-            },
-            (err, data) => {
-              if (data && data.statusCode === 200) {
-                msgObj.url = "https://" + data.Location;
-                if (msgObj) {
-                  sendMsg(msgObj);
-                }
-              }
-            }
-          );
+          props.scrollBottom();
+          if (state.cos || temCos) {
+            uploadFile(msgObj, fileExtension, file);
+          } else {
+            console.log(111111, state);
+            getCos((data) => {
+              initCos(data);
+              uploadFile(msgObj, fileExtension, file);
+            });
+          }
         };
       };
     } else {
       Toast.info("目前只支持jpg,jpeg,png,gif格式文件");
     }
   };
+
+  // useEffect(() => {}, [state.cos, state.cosConfig]);
 
   return (
     <div className="footer_wrapper">
@@ -233,7 +298,7 @@ const MsgSend = forwardRef((props, ref) => {
                 <input
                   type="file"
                   className="file_input"
-                  accept="image/*"
+                  accept={acceptTypes.join()}
                   onChange={selectImg}
                 />
               </div>
