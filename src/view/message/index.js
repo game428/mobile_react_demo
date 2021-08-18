@@ -105,7 +105,6 @@ const Message = (router, a, b) => {
   };
 
   const scrollBottom = () => {
-    console.log("滚动");
     setTimeout(() => {
       let scrollHeight = msgRef.current.getInnerViewNode().scrollHeight;
       msgRef.current.scrollTo(0, scrollHeight);
@@ -115,7 +114,7 @@ const Message = (router, a, b) => {
   // 接收消息
   const received = useCallback(
     (options) => {
-      console.log("接收到消息", options, params);
+      console.log("接收到消息", options);
       let newMsg = options.data[0];
       if (newMsg.conversationID === params.conversationID) {
         dispatch({ type: "updateMsgs", payload: options.data });
@@ -123,6 +122,7 @@ const Message = (router, a, b) => {
           $msim.setMessageRead({
             conversationID: newMsg.conversationID,
           });
+          scrollBottom();
         }
       }
     },
@@ -140,28 +140,18 @@ const Message = (router, a, b) => {
     [dispatch, params]
   );
 
-  useEffect(() => {
-    $msim.on($IM.EVENT.MESSAGE_RECEIVED, received);
-    $msim.on($IM.EVENT.MESSAGE_REVOKED, revoked);
+  const init = useCallback(() => {
+    if (!$msim[$IM.EVENT.MESSAGE_RECEIVED]) {
+      $msim.on($IM.EVENT.MESSAGE_RECEIVED, received);
+      $msim.on($IM.EVENT.MESSAGE_REVOKED, revoked);
+      loadData();
+    }
     if (state.curConversationID === null) {
       dispatch({ type: "changeChat", payload: params.conversationID });
-    } else if (state.msgList.length === 0) {
-      loadData();
-    } else {
-      setDataSource(ds.cloneWithRows([...state.msgList]));
     }
-    return () => {
-      $msim.off($IM.EVENT.MESSAGE_RECEIVED);
-      $msim.off($IM.EVENT.MESSAGE_REVOKED);
-    };
   }, [
-    router,
-    a,
-    b,
-    state.msgList,
-    ds,
-    $IM,
     $msim,
+    $IM,
     received,
     revoked,
     loadData,
@@ -169,6 +159,18 @@ const Message = (router, a, b) => {
     state.curConversationID,
     params.conversationID,
   ]);
+
+  useEffect(() => {
+    return () => {
+      $msim.off($IM.EVENT.MESSAGE_RECEIVED);
+      $msim.off($IM.EVENT.MESSAGE_REVOKED);
+    };
+  }, []);
+
+  useEffect(() => {
+    init();
+    setDataSource(ds.cloneWithRows([...state.msgList]));
+  }, [state.msgList, ds, init]);
 
   return (
     <div className="content">

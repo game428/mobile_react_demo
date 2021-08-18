@@ -95,10 +95,10 @@ const App = (props) => {
           Toast.hide();
           dispatch({ type: "setUserId", payload: userId });
           setIsInit(true);
-          // window.location.href= "/#/chat"
         })
         .catch((err) => {
           setIsInit(true);
+          logoutClear();
           if (err?.msg) {
             Toast.info(err.msg);
           }
@@ -115,21 +115,20 @@ const App = (props) => {
     updateChats,
     login,
     logout,
+    logoutClear,
     tokenNotFound,
   ]);
 
   useEffect(() => {
     initListener();
   }, [initListener]);
-  return (
+  return isInit ? (
     <Context.Provider value={store}>
-      {isInit ? (
-        <Router>
-          <Routes />
-        </Router>
-      ) : null}
+      <Router>
+        <Routes />
+      </Router>
     </Context.Provider>
-  );
+  ) : null;
 };
 
 export default App;
