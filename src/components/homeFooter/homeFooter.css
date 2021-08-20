@@ -1,3 +1,11 @@
 .footer_wrapper {
   height: 50px;
 }
+
+.footer_wrapper .iconfont {
+  font-size: 20px;
+}
+
+.footer_wrapper .iconfont.active_icon {
+  color: #108ee9;
+}

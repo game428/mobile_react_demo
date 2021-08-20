@@ -11,15 +11,14 @@ const App = (props) => {
   const [isInit, setIsInit] = useState(false);
   const $msim = window.$msim;
   const $IM = window.$IM;
-  const location = window.location;
 
   const logoutClear = useCallback(() => {
     window.localStorage.removeItem("userId");
     window.localStorage.removeItem("wsUrL");
     window.localStorage.removeItem("imToken");
     dispatch({ type: "clear" });
-    location.href = "/#/login";
-  }, [dispatch, location]);
+    window.location.href = window.location.pathname + "#/login";
+  }, [dispatch]);
 
   // 网络状态监听
   const wsChange = (options) => {
@@ -32,7 +31,7 @@ const App = (props) => {
       let userId = window.localStorage.getItem("userId");
       if (userId) {
         dispatch({ type: "setUserId", payload: userId });
-        // location.href = "/#/chat";
+        window.location.href = window.location.pathname + "#/chat";
       }
     },
     [dispatch]
@@ -104,8 +103,8 @@ const App = (props) => {
           }
         });
     } else {
-      window.location.href = "/#/login";
       setIsInit(true);
+      window.location.href = window.location.pathname + "#/login";
     }
   }, [
     dispatch,

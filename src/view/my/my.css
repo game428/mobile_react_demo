@@ -4,6 +4,8 @@
 
 .my_main {
   height: calc(100% - 50px);
+  box-sizing: border-box;
+  padding: 40px 0;
 }
 
 .my_main .avatar {
@@ -11,5 +13,5 @@
   height: 100px;
   border-radius: 50%;
   overflow: hidden;
-  margin: 40px auto;
+  margin: 0 auto 40px;
 }

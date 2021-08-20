@@ -1,6 +1,7 @@
 import { Icon, ActivityIndicator } from "zarm";
 import emojiMap from "@/assets/emoji/emojiMap.json";
 import "./msgItem.css";
+import SoundItem from "../soundItem";
 
 const MsgItem = (props) => {
   let message = props.message;
@@ -82,17 +83,26 @@ const MsgItem = (props) => {
   const msgTypeDom = () => {
     switch (message.type) {
       case 0:
-        return <span className="text_box">{handleMsg(message.text)}</span>;
+        return <div className="text_box">{handleMsg(message.text)}</div>;
       case 1:
         return <img className="image_element" src={message.url} alt="" />;
       case 2:
-        return <span className="text_box">[音频]</span>;
+        return (
+          <div className="text_box">
+            <SoundItem
+              message={message}
+              isSelf={isSelf}
+              playSound={props.playSound}
+              stopSound={props.stopSound}
+            ></SoundItem>
+          </div>
+        );
       case 3:
         return <img className="image_element" src={message.url} alt="" />;
       case 100:
-        return <span className="text_box">[自定义消息]</span>;
+        return <div className="text_box">[自定义消息]</div>;
       default:
-        return <span>{message.body}</span>;
+        return <div className="text_box">{message.body}</div>;
     }
   };
   return (

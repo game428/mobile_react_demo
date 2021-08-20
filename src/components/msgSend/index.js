@@ -1,10 +1,4 @@
-import {
-  useState,
-  useImperativeHandle,
-  forwardRef,
-  useContext,
-  useEffect,
-} from "react";
+import { useState, useImperativeHandle, forwardRef, useContext } from "react";
 import { context } from "@/reducer";
 import COS from "@/assets/js/cos-js-sdk-v5.min.js";
 import { Icon, Button, Grid, Toast } from "antd-mobile";
@@ -14,7 +8,6 @@ import "./msgSend.css";
 
 const MsgSend = forwardRef((props, ref) => {
   const $msim = window.$msim;
-  const $IM = window.$IM;
   const acceptTypes = ["image/jpg", "image/jpeg", "image/gif", "image/png"];
   const [state, dispatch] = useContext(context);
   const [msgText, setMsgText] = useState("");
@@ -251,8 +244,8 @@ const MsgSend = forwardRef((props, ref) => {
   // useEffect(() => {}, [state.cos, state.cosConfig]);
 
   return (
-    <div className="footer_wrapper">
-      <div className="footer_input">
+    <div className="send_wrapper">
+      <div className="send_input">
         <input
           className="msg_input"
           value={msgText}
@@ -265,7 +258,7 @@ const MsgSend = forwardRef((props, ref) => {
           placeholder="发送聊天内容"
         />
         <i
-          className="emoji_btn lg_icon iconfont icon-biaoqing"
+          className="emoji_btn iconfont icon-biaoqing"
           onClick={props.showEmoji}
         ></i>
         {msgText.length > 0 ? (
@@ -273,10 +266,7 @@ const MsgSend = forwardRef((props, ref) => {
             发送
           </Button>
         ) : (
-          <i
-            className="lg_icon iconfont icon-jjia-"
-            onClick={props.showMore}
-          ></i>
+          <i className="iconfont icon-jjia-" onClick={props.showMore}></i>
         )}
       </div>
       <div

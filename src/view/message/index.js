@@ -41,6 +41,32 @@ const Message = (router, a, b) => {
     if (isHideEmoji) setHideEmoji(false);
     if (!isHideMore) setHideMore(true);
   };
+  let curAudio = null;
+  let soundOptions = null;
+  function playSound(options) {
+    if (soundOptions) {
+      stopSound();
+    }
+    soundOptions = options;
+    curAudio = document.createElement("audio");
+    curAudio.src = options.message.url;
+    options.play();
+    const promise = curAudio.play();
+    curAudio.addEventListener("ended", () => {
+      stopSound();
+    });
+    if (promise) {
+      promise.catch(() => {
+        stopSound();
+      });
+    }
+  }
+  function stopSound() {
+    curAudio.pause();
+    soundOptions.stop();
+    curAudio = null;
+    soundOptions = null;
+  }
   const renderItem = (rowData, sectionID, rowID) => {
     return (
       <MsgItem
@@ -51,6 +77,8 @@ const Message = (router, a, b) => {
         resend={() => {
           msgSendRef.current.resend(rowData);
         }}
+        playSound={playSound}
+        stopSound={stopSound}
       ></MsgItem>
     );
   };

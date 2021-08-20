@@ -40,7 +40,7 @@
   position: absolute;
 }
 
-.footer_input {
+.send_input {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -49,7 +49,7 @@
   padding: 0 15px;
 }
 
-.footer_wrapper .msg_input {
+.send_wrapper .msg_input {
   flex: 1;
   border: 1px solid #666;
   border-radius: 4px;
@@ -57,16 +57,20 @@
   font-size: 16px;
 }
 
-.footer_wrapper .emoji_btn {
+.send_input .iconfont {
+  font-size: 30px;
+}
+
+.send_wrapper .emoji_btn {
   margin-left: 10px;
   margin-right: 10px;
 }
 
-.footer_wrapper .am-button {
+.send_wrapper .am-button {
   width: 60px;
 }
 
-.footer_wrapper .am-grid .am-flexbox {
+.send_wrapper .am-grid .am-flexbox {
   background-color: transparent;
 }
 
