@@ -1,24 +1,16 @@
 import { useState, useImperativeHandle, forwardRef, useContext } from "react";
 import { context } from "@/reducer";
-import COS from "@/assets/js/cos-js-sdk-v5.min.js";
-import { Icon, Button, Grid, Toast } from "antd-mobile";
-import emojiJson from "@/assets/emoji/emoji.json";
+import { Button, Toast } from "antd-mobile";
 import emojiMap from "@/assets/emoji/emojiMap.json";
 import "./msgSend.css";
+import More from "@/components/more";
+import Emoji from "@/components/emoji";
 
 const MsgSend = forwardRef((props, ref) => {
+  console.log("send");
   const $msim = window.$msim;
-  const acceptTypes = ["image/jpg", "image/jpeg", "image/gif", "image/png"];
   const [state, dispatch] = useContext(context);
   const [msgText, setMsgText] = useState("");
-  let temCos = null;
-  let temConfig = null;
-  const moreData = [
-    {
-      className: "more_item iconfont icon-tupian",
-      onClick: () => {},
-    },
-  ];
   useImperativeHandle(ref, () => {
     return {
       resend: resend,
@@ -91,6 +83,7 @@ const MsgSend = forwardRef((props, ref) => {
         msgObj.sendStatus = res.data.sendStatus;
         msgObj.msgId = res.data.msgId;
         dispatch({ type: "updateMsg", payload: msgObj });
+        console.log(state, 14);
       })
       .catch((err) => {
         msgObj.sendStatus = 2;
@@ -121,128 +114,6 @@ const MsgSend = forwardRef((props, ref) => {
       });
   };
 
-  // 上传图片到云
-  const uploadFile = (msgObj, fileExtension, file) => {
-    let name = new Date().getTime();
-    console.log(444, state);
-    let cos = state.cos || temCos;
-    let config = temConfig || state.cosConfig;
-    cos.putObject(
-      {
-        Bucket: config.bucket /* 必须 */,
-        Region: config.region /* 存储桶所在地域，必须字段 */,
-        Key: `${config.path}/${name}.${fileExtension}` /* 必须 */,
-        Body: file,
-        onProgress: (progressData) => {
-          msgObj.progress = progressData.percent * 100;
-          dispatch({ type: "updateMsg", payload: msgObj });
-        },
-      },
-      (err, data) => {
-        if (data && data.statusCode === 200) {
-          msgObj.url = "https://" + data.Location;
-          if (msgObj) {
-            sendMsg(msgObj);
-          }
-        }
-      }
-    );
-  };
-
-  // 获取cosKey
-  const getCos = (callback) => {
-    $msim.getCosKey().then((res) => {
-      dispatch({
-        type: "setCosConfig",
-        payload: res.data,
-      });
-      temConfig = res.data;
-      callback(res.data);
-    });
-  };
-
-  // 初始化cos
-  const initCos = (config) => {
-    let cosOptions = config;
-    temCos = new COS({
-      getAuthorization: (options, callback) => {
-        if (cosOptions) {
-          callback({
-            TmpSecretId: cosOptions.id,
-            TmpSecretKey: cosOptions.key,
-            SecurityToken: cosOptions.token,
-            // 建议返回服务器时间作为签名的开始时间，避免用户浏览器本地时间偏差过大导致签名错误
-            StartTime: cosOptions.startTime, // 时间戳，单位秒，如：1580000000
-            ExpiredTime: cosOptions.expTime, // 时间戳，单位秒，如：1580000900
-          });
-          cosOptions = null;
-        } else {
-          getCos((data) => {
-            callback({
-              TmpSecretId: data.id,
-              TmpSecretKey: data.key,
-              SecurityToken: data.token,
-              // 建议返回服务器时间作为签名的开始时间，避免用户浏览器本地时间偏差过大导致签名错误
-              StartTime: data.startTime, // 时间戳，单位秒，如：1580000000
-              ExpiredTime: data.expTime, // 时间戳，单位秒，如：1580000900
-            });
-          });
-        }
-      },
-    });
-    dispatch({
-      type: "setCos",
-      payload: temCos,
-    });
-  };
-
-  // 选择图片
-  const selectImg = (e) => {
-    let file = e.target.files[0];
-    if (acceptTypes.includes(file.type.toLowerCase())) {
-      // im_image
-      // im_video
-      // im_voice
-      e.target.value = "";
-      let fileExtension = file.type.slice(6).toLowerCase();
-      let reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = function (e) {
-        let image = new Image();
-        image.src = e.target.result;
-        image.onload = function () {
-          let width = this.width;
-          let height = this.height;
-          let msgObj = $msim.createImageMessage({
-            to: props.uid,
-            payload: {
-              height: height,
-              width: width,
-              url: e.target.result,
-              progress: 0,
-            },
-          });
-          dispatch({ type: "addMsg", payload: msgObj });
-          props.hideAll();
-          props.scrollBottom();
-          if (state.cos || temCos) {
-            uploadFile(msgObj, fileExtension, file);
-          } else {
-            console.log(111111, state);
-            getCos((data) => {
-              initCos(data);
-              uploadFile(msgObj, fileExtension, file);
-            });
-          }
-        };
-      };
-    } else {
-      Toast.info("目前只支持jpg,jpeg,png,gif格式文件");
-    }
-  };
-
-  // useEffect(() => {}, [state.cos, state.cosConfig]);
-
   return (
     <div className="send_wrapper">
       <div className="send_input">
@@ -269,64 +140,11 @@ const MsgSend = forwardRef((props, ref) => {
           <i className="iconfont icon-jjia-" onClick={props.showMore}></i>
         )}
       </div>
-      <div
-        className={
-          "footer_more more_wrapper " + (props.isHideMore ? "is_head_more" : "")
-        }
-      >
-        <div className="more_cont">
-          <Grid
-            data={moreData}
-            itemStyle={{ margin: "0 10px" }}
-            hasLine={false}
-            renderItem={(dataItem) => (
-              <div className="grid_item bg_w">
-                <i
-                  className={dataItem.className}
-                  onClick={dataItem.onClick}
-                ></i>
-                <input
-                  type="file"
-                  className="file_input"
-                  accept={acceptTypes.join()}
-                  onChange={selectImg}
-                />
-              </div>
-            )}
-          />
-        </div>
+      <div className={"more_cont" + (props.isHideMore ? " hide_height" : "")}>
+        <More {...props} sendMsg={sendMsg} />
       </div>
-      <div
-        className={
-          "footer_more emoji_wrapper " +
-          (props.isHideEmoji ? "is_head_more" : "")
-        }
-      >
-        <div className="more_cont">
-          <Grid
-            data={emojiJson}
-            itemStyle={{ margin: "0 10px" }}
-            columnNum={7}
-            hasLine={false}
-            renderItem={(dataItem) => (
-              <div
-                className="grid_item"
-                onClick={() => {
-                  selectEmoji(dataItem);
-                }}
-              >
-                <img
-                  className="emoji_item"
-                  src={require("@/assets/emoji/" + dataItem.url).default}
-                  alt={dataItem.key}
-                />
-              </div>
-            )}
-          />
-        </div>
-        <div className="clear_btn">
-          <Icon type="cross" size="md" onClick={() => clearMsg()} />
-        </div>
+      <div className={"more_cont" + (props.isHideEmoji ? " hide_height" : "")}>
+        <Emoji selectEmoji={selectEmoji} clearMsg={clearMsg} />
       </div>
     </div>
   );

@@ -1,17 +1,15 @@
-.footer_more {
-  height: 200px;
-  transition: height 0.2s;
+.more_cont {
+  height: 160px;
+  padding: 20px 10px;
+  transition: all 0.2s;
   color: #eee;
   overflow: auto;
 }
 
-.more_cont {
-  flex: 1;
-  padding: 20px 10px;
-}
 
-.footer_more.is_head_more {
+.more_cont.hide_height {
   height: 0px;
+  padding: 0px 10px;
 }
 
 .more_icon {
@@ -36,7 +34,7 @@
   box-shadow: var(--shadow);
 }
 
-.footer_more.is_head_more .clear_btn {
+.more_cont.hide_height .clear_btn {
   position: absolute;
 }
 

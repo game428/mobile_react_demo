@@ -11,12 +11,26 @@ const addCustomize = () => (config) => {
   config.devtool = false;
   // 配置打包后的文件位置
   config.output.publicPath = "./";
+  if (process.env.NODE_ENV === "production") {
+    config.optimization = {
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            compress: {
+              drop_console: true,
+            },
+          },
+        }),
+      ],
+    };
+  }
   return config;
 };
 //引入该插件
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
 //匹配此 {RegExp} 的资源
 const productionGzipExtensions = /\.(js|css|json|txt|html|ico|svg)(\?.*)?$/i;
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = override(
   fixBabelImports("import", {

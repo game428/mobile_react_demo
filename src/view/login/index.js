@@ -84,6 +84,14 @@ const Login = () => {
             登录
           </Button>
           <WhiteSpace />
+          <Button
+            onClick={() => {
+              history.push("/register");
+            }}
+          >
+            注册
+          </Button>
+          <WhiteSpace />
         </WingBlank>
       </div>
     </div>

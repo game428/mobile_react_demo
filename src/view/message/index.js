@@ -12,11 +12,12 @@ import "./message.css";
 import MsgSend from "@/components/msgSend";
 import MsgItem from "@/components/msgItem";
 
-const Message = (router, a, b) => {
+const Message = (router) => {
   const $msim = window.$msim;
   const $IM = window.$IM;
   const params = router.match.params;
   let uid = parseInt(params.uid);
+  let conversationID = params.conversationID;
   const [state, dispatch] = useContext(context);
   const ds = useMemo(() => {
     return new ListView.DataSource({
@@ -87,7 +88,7 @@ const Message = (router, a, b) => {
     (msgId) => {
       $msim
         .getMessageList({
-          conversationID: params.conversationID,
+          conversationID: conversationID,
           msgEnd: msgId,
         })
         .then((res) => {
@@ -104,7 +105,7 @@ const Message = (router, a, b) => {
           return Toast.info(err?.msg || err);
         });
     },
-    [$msim, dispatch, params]
+    [$msim, dispatch, conversationID]
   );
 
   // 模拟加载更多数据
@@ -144,7 +145,7 @@ const Message = (router, a, b) => {
     (options) => {
       console.log("接收到消息", options);
       let newMsg = options.data[0];
-      if (newMsg.conversationID === params.conversationID) {
+      if (newMsg.conversationID === conversationID) {
         dispatch({ type: "updateMsgs", payload: options.data });
         if (newMsg.fromUid === uid || options.data.length > 1) {
           $msim.setMessageRead({
@@ -154,18 +155,18 @@ const Message = (router, a, b) => {
         }
       }
     },
-    [dispatch, $msim, params, uid]
+    [dispatch, $msim, conversationID, uid]
   );
   // 撤回消息
   const revoked = useCallback(
     (options) => {
       console.log("接收到撤回消息", options);
       let newMsg = options.data[0];
-      if (newMsg.conversationID === params.conversationID) {
+      if (newMsg.conversationID === conversationID) {
         dispatch({ type: "revokeMsgs", payload: options.data });
       }
     },
-    [dispatch, params]
+    [dispatch, conversationID]
   );
 
   const init = useCallback(() => {
@@ -175,7 +176,7 @@ const Message = (router, a, b) => {
       loadData();
     }
     if (state.curConversationID === null) {
-      dispatch({ type: "changeChat", payload: params.conversationID });
+      dispatch({ type: "changeChat", payload: conversationID });
     }
   }, [
     $msim,
@@ -185,7 +186,7 @@ const Message = (router, a, b) => {
     loadData,
     dispatch,
     state.curConversationID,
-    params.conversationID,
+    conversationID,
   ]);
 
   useEffect(() => {
@@ -193,6 +194,7 @@ const Message = (router, a, b) => {
       $msim.off($IM.EVENT.MESSAGE_RECEIVED);
       $msim.off($IM.EVENT.MESSAGE_REVOKED);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -207,7 +209,7 @@ const Message = (router, a, b) => {
         icon={<Icon type="left" />}
         onLeftClick={() => router.history.goBack()}
       >
-        {router.match.params.conversationID}
+        {conversationID}
       </NavBar>
       <div
         className={

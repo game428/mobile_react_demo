@@ -5,8 +5,6 @@ let initState = {
   chatList: [], // 会话列表
   msgList: [], // 消息列表
   curConversationID: null, // 当前会话ID
-  cos: {}, // 当前cos
-  cosConfig: {}, // cos相关配置
 };
 
 // 更新state
@@ -36,16 +34,6 @@ const clear = (state) => {
 const setUserId = (state, userId) => {
   return updateObject(state, {
     curUserId: userId,
-  });
-};
-const setCos = (state, cos) => {
-  return updateObject(state, {
-    cos: cos,
-  });
-};
-const setCosConfig = (state, data) => {
-  return updateObject(state, {
-    cosConfig: data,
   });
 };
 
@@ -183,10 +171,6 @@ const reducer = (state, action) => {
       return clear(state);
     case "setUserId":
       return setUserId(state, payload);
-    case "setCos":
-      return setCos(state, payload);
-    case "setCosConfig":
-      return setCosConfig(state, payload);
     case "addChats":
       return addChats(state, payload);
     case "addChat":

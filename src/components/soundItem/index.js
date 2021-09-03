@@ -44,10 +44,13 @@ const SoundItem = (props) => {
     }
   };
   useEffect(() => {
-    if (playing) {
-      stop();
-      props.stopSound();
-    }
+    return () => {
+      if (playing) {
+        stop();
+        props.stopSound();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <div className="sound_item" onClick={start}>

@@ -7,7 +7,7 @@ import Routes from "./route";
 
 const App = (props) => {
   const store = useReducer(reducer, initState);
-  let [state, dispatch] = store;
+  let [, dispatch] = store;
   const [isInit, setIsInit] = useState(false);
   const $msim = window.$msim;
   const $IM = window.$IM;
