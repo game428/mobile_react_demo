@@ -33,6 +33,9 @@ const productionGzipExtensions = /\.(js|css|json|txt|html|ico|svg)(\?.*)?$/i;
 const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = override(
+  addWebpackAlias({
+    "@": path.resolve(__dirname, "src"),
+  }),
   fixBabelImports("import", {
     libraryName: "antd-mobile",
     style: "css",
@@ -52,8 +55,5 @@ module.exports = override(
       propList: ["*"],
     }),
   ]),
-  addWebpackAlias({
-    ["@"]: path.resolve(__dirname, "src"),
-  }),
   addCustomize()
 );

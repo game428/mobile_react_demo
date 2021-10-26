@@ -24,7 +24,7 @@ const initCos = () => {
         SecretId: initOptions.id,
         SecretKey: initOptions.key,
         SecurityToken: initOptions.token,
-        Timeout: initOptions.expTime,
+        Timeout: initOptions.expTime - initOptions.startTime,
         getAuthorization: (options, callback) => {
           getCos().then((data) => {
             callback({
@@ -47,14 +47,11 @@ const initCos = () => {
 export function getCosOptions() {
   return new Promise((resolve, reject) => {
     if (cosOptions === null) {
-      console.log(11);
       cosOptions = {};
       initCos().then(() => {
-        console.log(22);
         resolve(cosOptions);
       });
     } else {
-      console.log(33);
       resolve(cosOptions);
     }
   });

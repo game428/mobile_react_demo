@@ -10,7 +10,7 @@
     "axios": "^0.21.1",
     "js-sha1": "^0.6.0",
     "lib-flexible": "^0.3.2",
-    "msim": "^1.0.10",
+    "msim": "^1.0.12",
     "msim_1_test": "^1.0.15",
     "postcss-pxtorem": "^5.1.1",
     "react": "^17.0.2",
