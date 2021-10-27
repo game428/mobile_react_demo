@@ -25,6 +25,7 @@ const Register = () => {
         uid: phone.value,
         nick_name: nickName.value,
         avatar: url,
+        gender: 1, // 性别
         verified: true, // 是否认证
         gold: true, // 是否是gold
         gold_exp_time: 0, // gold过期时间

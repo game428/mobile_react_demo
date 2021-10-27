@@ -1,4 +1,4 @@
-import COS from "@/assets/js/cos-js-sdk-v5.min.js";
+import COS from "cos-js-sdk-v5";
 let cosOptions = null;
 // 获取cosKey
 const getCos = () => {

@@ -63,16 +63,16 @@ const MsgSend = forwardRef((props, ref) => {
       setMsgText("");
       return Toast.info("不能发空消息");
     }
-    let msgObj = $msim.createTextMessage({
+    let result = $msim.createTextMessage({
       to: props.uid,
       payload: {
         text: msgText,
       },
     });
     setMsgText("");
-    dispatch({ type: "addMsg", payload: msgObj });
+    dispatch({ type: "addMsg", payload: result.message });
     props.scrollBottom();
-    sendMsg(msgObj);
+    sendMsg(result.message);
   };
 
   // 发送消息

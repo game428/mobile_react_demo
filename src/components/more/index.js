@@ -56,7 +56,7 @@ const More = (props) => {
         image.onload = function () {
           let width = this.width;
           let height = this.height;
-          let msgObj = $msim.createImageMessage({
+          let result = $msim.createImageMessage({
             to: props.uid,
             payload: {
               height: height,
@@ -65,11 +65,11 @@ const More = (props) => {
               progress: 0,
             },
           });
-          dispatch({ type: "addMsg", payload: msgObj });
+          dispatch({ type: "addMsg", payload: result.message });
           props.hideAll();
           props.scrollBottom();
           getCosOptions().then((options) => {
-            uploadFile(msgObj, fileExtension, file, options);
+            uploadFile(result.message, fileExtension, file, options);
           });
         };
       };

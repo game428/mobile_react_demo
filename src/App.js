@@ -89,6 +89,7 @@ const App = (props) => {
         .login({
           wsUrl: wsUrL,
           imToken: imToken,
+          subAppId: 1,
         })
         .then((loginRes) => {
           Toast.hide();
