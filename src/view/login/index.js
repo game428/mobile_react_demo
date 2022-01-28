@@ -75,6 +75,7 @@ const Login = () => {
           <InputItem
             {...phone}
             type="number"
+            maxLength="11"
             placeholder="输入手机号"
             disabled={isLogoin}
           >

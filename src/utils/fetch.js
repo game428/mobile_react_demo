@@ -21,6 +21,7 @@ service.interceptors.request.use(
     config.headers["nonce"] = nonce;
     config.headers["timestamp"] = timestamp;
     config.headers["sig"] = sig;
+    config.headers["appid"] = 1;
     // config.headers["X-Requested-With"] = "XMLHttpRequest";
     // config["crossDomain"] = true;
     return config;

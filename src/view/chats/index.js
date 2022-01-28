@@ -52,12 +52,15 @@ const ChatPage = () => {
 
   const initChat = useCallback(
     (conversationID) => {
+      console.log(11, conversationID);
       $msim
         .getConversationList({
           conversationID: conversationID,
+          pageSize: 20,
         })
         .then((res) => {
           let chats = res.data.chats;
+          console.log(1111, chats);
           setHasMore(res.data.hasMore);
           if (chats.length > 0) {
             dispatch({ type: "addChats", payload: chats });

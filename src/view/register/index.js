@@ -48,7 +48,12 @@ const Register = () => {
           <div className="logo">
             <img className="logo_img" src={logo} alt="" />
           </div>
-          <InputItem {...phone} type="number" placeholder="输入手机号">
+          <InputItem
+            {...phone}
+            type="number"
+            maxLength="11"
+            placeholder="输入手机号"
+          >
             手机号码
           </InputItem>
           <InputItem {...nickName} type="number" placeholder="输入昵称">
